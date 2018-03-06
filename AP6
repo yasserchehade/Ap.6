@@ -1,6 +1,7 @@
 %yasser chahadeh
 %1460164
 
+clear, clc
 N=10;
 Lx=pi;
 Ly=pi;
@@ -9,3 +10,37 @@ u0=0;
 uL=0;
 v0=0;
 vL=0;
+%since Lx=Ly we can assume dx=dy
+dx=Lx/(N+1);
+%the matrix is a (N+1)^2 X (N+1)^2
+%the main diagonal is -4
+%the sub and sup diagonal is 1
+%aditional 2 diagonals starting on the (N+2,1) and (1,N+2) of ones
+%there are 5 non-zero diagonals in the matrix
+%we first start by deviding the matrix into smaller blocks each of a
+%dimention N+1 x N+1
+%we notice that the diagonal blocks are tri-diagonal
+%and the corresponding sup and sub blocks are an identity 
+
+%the diagonal blocks are of this form
+A_diag=-4*eye(N+1)+diag(ones(N,1),1)+diag(ones(N,1),-1);
+%the sub and sup blocks are of this form
+%A_sup=A_sub=I_(N+1)
+A_sup=eye(N+1);
+%since the majority of the big matrice is full of zeroes we will create a
+%sparse matrice to be filled
+
+A=sparse((N+1)*(N+1),(N+1)*(N+1));
+%filling in the diagonal blocks in there appropriate place
+
+for ii=1:N+1
+    A((ii-1)*(N+1)+1:(ii-1)*(N+1)+(N+1),(ii-1)*(N+1)+1:(ii-1)*(N+1)+(N+1))=A_diag;
+end
+
+%filling in the sub and sup blocks
+
+for ii=2:N+1
+    A((ii-2)*(N+1)+1:(ii-2)*(N+1)+(N+1),(ii-1)*(N+1)+1:(ii-1)*(N+1)+(N+1))=A_sup;
+    A((ii-1)*(N+1)+1:(ii-1)*(N+1)+(N+1),(ii-2)*(N+1)+1:(ii-2)*(N+1)+(N+1))=A_sup;
+end
+
