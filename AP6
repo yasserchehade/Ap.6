@@ -2,7 +2,8 @@
 %1460164
 
 clear, clc
-N=100;
+close
+N=10;
 Lx=pi;
 Ly=pi;
 M=1;
@@ -101,6 +102,14 @@ for a=[1/4 1/2 3/4]
     j=round((N+1)*a);
     figure
     plot(x,u(:,j),x,U(:,j))
+    legend('calculated','exact')
+    title(['plot comaprison for y=' num2str(Lx*a) ' of calculated and exact' ])
+    xlabel('x')
+    ylabel('u(x,y)')
     figure
     plot(y,u(j,:),y,U(j,:))
+    title(['plot comaprison for x=' num2str(Lx*a) ' of calculated and exact' ])
+    legend('calculated','exact')
+    xlabel('y')
+    ylabel('u(x,y)')
 end
