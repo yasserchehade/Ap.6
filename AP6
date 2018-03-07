@@ -9,19 +9,19 @@ M=1;
 
 %since Lx=Ly we can assume dx=dy
 dx=Lx/(N+1);
-x=zeros(1,N+1);
-for ii=1:N+1
+x=zeros(1,N);
+for ii=1:N
     x(ii)=ii*dx;
 end
-y=zeros(1,N+1);
-for ii=1:N+1
+y=zeros(1,N);
+for ii=1:N
     y(ii)=ii*dx;
 end
 %boundary conditions
-u_x_0=zeros(1,N+1);
-u_x_Ly=zeros(1,N+1);
-u_0_y=zeros(N+1,1);
-u_Lx_y=zeros(N+1,1);
+u_x_0=zeros(1,N);%to be replaced with u(x,0) a function of x if needed
+u_x_Ly=zeros(1,N);%to be replaced with u(x,Ly) a function of x if needed
+u_0_y=zeros(N,1);%to be replaced with u(0,y) a function of y if needed
+u_Lx_y=zeros(N,1);%to be replaced with u(Lx,y) a function of y if needed
 %the matrix is a (N+1)^2 X (N+1)^2
 %the main diagonal is -4
 %the sub and sup diagonal is 1
@@ -33,31 +33,31 @@ u_Lx_y=zeros(N+1,1);
 %and the corresponding sup and sub blocks are an identity 
 
 %the diagonal blocks are of this form
-A_diag=-4*eye(N+1)+diag(ones(N,1),1)+diag(ones(N,1),-1);
+A_diag=-4*eye(N)+diag(ones(N-1,1),1)+diag(ones(N-1,1),-1);
 %the sub and sup blocks are of this form
-%A_sup=A_sub=I_(N+1)
-A_sup=eye(N+1);
+%A_sup=A_sub=I_(N)
+A_sup=eye(N);
 %since the majority of the big matrice is full of zeroes we will create a
 %sparse matrice to be filled
 
-A=sparse((N+1)*(N+1),(N+1)*(N+1));
+A=sparse((N)*(N),(N)*(N));
 %filling in the diagonal blocks in there appropriate place
 
-for ii=1:N+1
-    A((ii-1)*(N+1)+1:(ii-1)*(N+1)+(N+1),(ii-1)*(N+1)+1:(ii-1)*(N+1)+(N+1))=A_diag;
+for ii=1:N
+    A((ii-1)*(N)+1:(ii-1)*(N)+(N),(ii-1)*(N)+1:(ii-1)*(N)+(N))=A_diag;
 end
 
 %filling in the sub and sup blocks
 
-for ii=2:N+1
-    A((ii-2)*(N+1)+1:(ii-2)*(N+1)+(N+1),(ii-1)*(N+1)+1:(ii-1)*(N+1)+(N+1))=A_sup;
-    A((ii-1)*(N+1)+1:(ii-1)*(N+1)+(N+1),(ii-2)*(N+1)+1:(ii-2)*(N+1)+(N+1))=A_sup;
+for ii=2:N
+    A((ii-2)*(N)+1:(ii-2)*(N)+(N),(ii-1)*(N)+1:(ii-1)*(N)+(N))=A_sup;
+    A((ii-1)*(N)+1:(ii-1)*(N)+(N),(ii-2)*(N)+1:(ii-2)*(N)+(N))=A_sup;
 end
 %setting up the f(x,y) matrix
 %if f(x,y) was a (N+1) x (N+1) fij will be f(i,j)
-f=zeros(N+1,N+1);
-for ii=1:N+1
-    for jj=1:N+1
+f=zeros(N,N);
+for ii=1:N
+    for jj=1:N
         f(ii,jj)=-2*M*sin(M*dx*ii)*cosh(M*jj*dx);
     end
 end
@@ -65,17 +65,31 @@ end
 f=dx^2*f;
 %adding boundary conditions
 f(:,1)=f(:,1)-u_0_y;
-f(:,N+1)=f(:,N+1)-u_Lx_y;
+f(:,N)=f(:,N)-u_Lx_y;
 f(1,:)=f(1,:)-u_x_0;
-f(N+1,:)=f(N+1,:)-u_x_Ly;
+f(N,:)=f(N,:)-u_x_Ly;
 %rearranging it into a column vector 
-f=reshape(f,(N+1)*(N+1),1);
+f=reshape(f,(N)*(N),1);
 %since now we have the matrix of the form A*u=f we solve for u
 u=A\f;
 %since every N+1 row correspond to a j value for y
 %rearranging the matrix into a N+1 by N+1 will give us the 2D grid where
 %every entry in u correspond to a node in the grid
-u=reshape(u,N+1,N+1);
+u=reshape(u,N,N);
 %plotting u
 surf(u)
 
+%calculating error
+U=zeros(N,N);
+for ii=1:N
+    for jj=1:N
+        U(ii,jj)=(Lx-jj*dx)*sin(M*dx*ii)*sinh(M*jj*dx);
+    end
+end
+figure
+surf(U)
+
+%the L1 error is simply |U-u|/|U|
+L1=abs(U-u)./abs(U);
+figure
+surf(L1)
