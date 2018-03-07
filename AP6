@@ -93,3 +93,14 @@ surf(U)
 L1=abs(U-u)./abs(U);
 figure
 surf(L1)
+
+%graphing the numerical solution in comparison to the exact solution for
+%various x and y
+
+for a=[1/4 1/2 3/4]
+    j=round((N+1)*a);
+    figure
+    plot(x,u(:,j),x,U(:,j))
+    figure
+    plot(y,u(j,:),y,U(j,:))
+end
