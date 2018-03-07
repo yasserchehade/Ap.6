@@ -2,16 +2,26 @@
 %1460164
 
 clear, clc
-N=10;
+N=100;
 Lx=pi;
 Ly=pi;
 M=1;
-u0=0;
-uL=0;
-v0=0;
-vL=0;
+
 %since Lx=Ly we can assume dx=dy
 dx=Lx/(N+1);
+x=zeros(1,N+1);
+for ii=1:N+1
+    x(ii)=ii*dx;
+end
+y=zeros(1,N+1);
+for ii=1:N+1
+    y(ii)=ii*dx;
+end
+%boundary conditions
+u_x_0=zeros(1,N+1);
+u_x_Ly=zeros(1,N+1);
+u_0_y=zeros(N+1,1);
+u_Lx_y=zeros(N+1,1);
 %the matrix is a (N+1)^2 X (N+1)^2
 %the main diagonal is -4
 %the sub and sup diagonal is 1
@@ -43,4 +53,29 @@ for ii=2:N+1
     A((ii-2)*(N+1)+1:(ii-2)*(N+1)+(N+1),(ii-1)*(N+1)+1:(ii-1)*(N+1)+(N+1))=A_sup;
     A((ii-1)*(N+1)+1:(ii-1)*(N+1)+(N+1),(ii-2)*(N+1)+1:(ii-2)*(N+1)+(N+1))=A_sup;
 end
+%setting up the f(x,y) matrix
+%if f(x,y) was a (N+1) x (N+1) fij will be f(i,j)
+f=zeros(N+1,N+1);
+for ii=1:N+1
+    for jj=1:N+1
+        f(ii,jj)=-2*M*sin(M*dx*ii)*cosh(M*jj*dx);
+    end
+end
+%multiplying by dx^2
+f=dx^2*f;
+%adding boundary conditions
+f(:,1)=f(:,1)-u_0_y;
+f(:,N+1)=f(:,N+1)-u_Lx_y;
+f(1,:)=f(1,:)-u_x_0;
+f(N+1,:)=f(N+1,:)-u_x_Ly;
+%rearranging it into a column vector 
+f=reshape(f,(N+1)*(N+1),1);
+%since now we have the matrix of the form A*u=f we solve for u
+u=A\f;
+%since every N+1 row correspond to a j value for y
+%rearranging the matrix into a N+1 by N+1 will give us the 2D grid where
+%every entry in u correspond to a node in the grid
+u=reshape(u,N+1,N+1);
+%plotting u
+surf(u)
 
