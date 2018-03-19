@@ -3,7 +3,7 @@
 
 clear, clc
 close
-N=10;
+N=100;
 Lx=pi;
 Ly=pi;
 M=1;
